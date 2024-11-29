@@ -1,18 +1,32 @@
+import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ArticleEntity } from './entities/article.entity';
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { ArticlesService } from './articles.service';
+import { ApiTags } from '@nestjs/swagger';
+
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 
 @Controller('articles')
+@ApiTags('articles')
+
 export class ArticlesController {
   constructor(private readonly articlesService: ArticlesService) {}
 
   @Post()
+  @ApiCreatedResponse({ type: ArticleEntity })
   create(@Body() createArticleDto: CreateArticleDto) {
     return this.articlesService.create(createArticleDto);
   }
 
+  @Get('drafts')
+  @ApiOkResponse({ type: ArticleEntity, isArray: true })
+  findDrafts() {
+    return this.articlesService.findDrafts();
+  }
+
   @Get()
+  @ApiOkResponse({ type: ArticleEntity, isArray: true })
   findAll() {
     return this.articlesService.findAll();
   }
