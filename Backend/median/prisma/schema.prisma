@@ -21,5 +21,4 @@ model Article {
   published   Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  author      String    @default("Anonymous")
 }
