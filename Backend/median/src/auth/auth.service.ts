@@ -32,6 +32,28 @@ import {
       // Step 3: Generate a JWT containing the user's ID and return it
       return {
         accessToken: this.jwtService.sign({ userId: user.id }),
+        refreshToken: this.jwtService.sign({ userId: user.id },{expiresIn: '7d'}),
       };
+    }
+
+    async refreshTokens(refreshToken: string): Promise<AuthEntity> {
+      try {
+        // Verify the refresh token
+        const payload = this.jwtService.verify(refreshToken);
+        
+        // Assuming user exists in the DB based on the payload's userId
+        const user = await this.prisma.user.findUnique({ where: { id: payload.userId } });
+        if (!user) {
+          throw new UnauthorizedException('User not found');
+        }
+  
+        // Generate new access and refresh tokens
+        const newAccessToken = this.jwtService.sign({ userId: user.id }, { expiresIn: '5m' });
+        const newRefreshToken = this.jwtService.sign({ userId: user.id }, { expiresIn: '7d' });
+  
+        return { accessToken: newAccessToken, refreshToken: newRefreshToken };
+      } catch (error) {
+        throw new UnauthorizedException('Invalid refresh token');
+      }
     }
   }
