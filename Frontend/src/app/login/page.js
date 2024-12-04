@@ -41,11 +41,14 @@ const LoginPage = () => {
       }
 
       const data = await response.json();
-      const token = data.token; // Assuming the token is returned under 'token' key
+      const accessToken = data.accessToken; // Assuming the token is returned under 'token' key
+      const refreshToken = data.refreshToken;
       setSuccessMessage('Login successful!');
 
       // Store the token (you can use localStorage or sessionStorage depending on your needs)
-      localStorage.setItem('authToken', token);  // Storing token in localStorage
+      localStorage.setItem('authToken', accessToken);  // Storing token in localStorage
+      localStorage.setItem('refreshToken', refreshToken);
+      console.log("token form login", accessToken)
 
       // Optionally, redirect the user after successful login
       window.location.href = '/articles';  // Or use Next.js router to navigate
