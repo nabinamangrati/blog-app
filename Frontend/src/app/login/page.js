@@ -10,14 +10,6 @@ const LoginPage = () => {
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -79,7 +71,7 @@ const LoginPage = () => {
             type="email"
             name="email"
             value={formData.email}
-            onChange={handleChange}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             required
           />
         </label>
@@ -90,7 +82,7 @@ const LoginPage = () => {
             type="password"
             name="password"
             value={formData.password}
-            onChange={handleChange}
+            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
             required
           />
         </label>

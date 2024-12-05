@@ -1,17 +1,12 @@
 'use client'
 import { useEffect, useState } from "react";
 import axios from "axios";
-// import { useRouter } from 'next/router';  // Import useRouter for redirection
-
-
 const Page=()=>{
   const [articles, setArticles]=useState([])
   const [error, setError] = useState("");  
-  // const router = useRouter();  // Initialize the useRouter hook
 
   const fetchArticles = async () => {
     const token = localStorage.getItem('authToken');
-    console.log("token",token);
     if (!token) {
       setError("You need to log in to access the articles.");
       console.log("You need to log in to access the articles.");
@@ -47,15 +42,19 @@ const Page=()=>{
     <div>
       <h1>Articles</h1>
 <button onClick={handleLogout}>Logout</button>
-      <ul>
-        {articles.map((article) => (
-          <li key={article.id}>
-           <p> Title: {article.title}</p>
-           <p>Description: {article.description}</p>
-           <p>Author:  {article.author}</p>
-            </li> 
-        ))}
-      </ul>
+{articles.length > 0 ? (
+        <ul>
+          {articles.map((article) => (
+            <li key={article.id}>
+              <p> Title: {article.title}</p>
+              <p>Description: {article.description}</p>
+              <p>Author:  {article.author}</p>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p>No articles available. Or only logged in user can view the articles</p>  // Handle case when articles are empty
+      )}
 
     </div>
   )

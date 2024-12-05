@@ -12,14 +12,6 @@ const RegisterPage = () => {
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -79,7 +71,7 @@ const RegisterPage = () => {
             type="text"
             name="name"
             value={formData.name}
-            onChange={handleChange}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required
           />
         </label>
@@ -90,7 +82,7 @@ const RegisterPage = () => {
             type="email"
             name="email"
             value={formData.email}
-            onChange={handleChange}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             required
           />
         </label>
@@ -101,7 +93,7 @@ const RegisterPage = () => {
             type="password"
             name="password"
             value={formData.password}
-            onChange={handleChange}
+            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
             required
           />
         </label>
@@ -112,7 +104,7 @@ const RegisterPage = () => {
             type="password"
             name="confirmPassword"
             value={formData.confirmPassword}
-            onChange={handleChange}
+            onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
             required
           />
         </label>
