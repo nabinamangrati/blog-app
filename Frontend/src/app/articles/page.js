@@ -1,5 +1,7 @@
 'use client'
 import { useEffect, useState } from "react";
+import Link from 'next/link';
+
 import axios from "axios";
 const Page=()=>{
   const [articles, setArticles]=useState([])
@@ -21,9 +23,17 @@ const Page=()=>{
       });
       console.log("data",response.data);
       setArticles(response.data)
+
+      
     } catch (error) {
       console.error(error); // Log errors for debugging
-      setError("Failed to fetch articles. Please try again later.");
+      
+      if (error.response && error.response.status === 401) {
+        // Token expired, set error message
+        setError("Your session has expired. Please log in again.");
+      } else {
+        setError("Failed to fetch articles. Please try again later.");
+      }
 
     }
   };
@@ -44,11 +54,12 @@ const Page=()=>{
 <button onClick={handleLogout}>Logout</button>
 {articles.length > 0 ? (
         <ul>
-          {articles.map((article) => (
+          {articles.map((article, index) => (
             <li key={article.id}>
-              <p> Title: {article.title}</p>
-              <p>Description: {article.description}</p>
-              <p>Author:  {article.author}</p>
+              <p> {index + 1} Title: {article.title}</p>
+              <Link href={`/articles/${article.id}`}>
+                Read more
+              </Link>
             </li>
           ))}
         </ul>
