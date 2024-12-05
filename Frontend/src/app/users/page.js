@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState } from "react";
+import Link from 'next/link';
 
 import axios from "axios";
 const Page=()=>{
@@ -45,10 +46,13 @@ const Page=()=>{
 <button onClick={handleLogout}>Logout</button>
 {users.length > 0 ? (
         <ul>
-          {users.map((user) => (
+          {users.map((user,index) => (
             <li key={user.id}>
-              <p> Name: {user.name}</p>
-              <p>Email: {user.email}</p>            
+              <p> {index + 1} Name: 
+  <Link href={`/users/${user.id}`}>
+    {user.name}
+  </Link></p>
+              
             </li>
           ))}
         </ul>
