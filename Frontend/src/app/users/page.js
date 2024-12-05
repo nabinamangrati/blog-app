@@ -25,7 +25,12 @@ const Page=()=>{
       setUsers(response.data)
     } catch (error) {
       console.error(error); // Log errors for debugging
-      setError("Failed to fetch articles. Please try again later.");
+      if (error.response && error.response.status === 401) {
+        // Token expired, set error message
+        setError("Your session has expired. Please log in again.");
+      } else {
+        setError("Failed to fetch articles. Please try again later.");
+      }
 
     }
   };
@@ -44,7 +49,8 @@ const Page=()=>{
     <div>
       <h1>Users</h1>
 <button onClick={handleLogout}>Logout</button>
-{users.length > 0 ? (
+  {error && <p style={{ color: 'red' }}>{error}</p>} {/* Display error message */}
+
         <ul>
           {users.map((user,index) => (
             <li key={user.id}>
@@ -56,10 +62,7 @@ const Page=()=>{
             </li>
           ))}
         </ul>
-      ) : (
-        <p>No users available. Or only logged in user can view the users list</p>  // Handle case when articles are empty
-      )}
-
+    
     </div>
   )
 }

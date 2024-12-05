@@ -52,21 +52,19 @@ const Page=()=>{
     <div>
       <h1>Articles</h1>
 <button onClick={handleLogout}>Logout</button>
-{articles.length > 0 ? (
+{error && <p style={{ color: 'red' }}>{error}</p>} {/* Display error message */}
         <ul>
           {articles.map((article, index) => (
             <li key={article.id}>
-              <p> {index + 1} Title: {article.title}</p>
-              <Link href={`/articles/${article.id}`}>
-                Read more
-              </Link>
+             
+
+              <p> {index + 1} Title: 
+  <Link href={`/articles/${article.id}`}>
+    {article.title}
+  </Link></p>
             </li>
           ))}
         </ul>
-      ) : (
-        <p>No articles available. Or only logged in user can view the articles</p>  // Handle case when articles are empty
-      )}
-
     </div>
   )
 }
