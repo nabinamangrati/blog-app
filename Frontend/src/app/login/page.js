@@ -43,7 +43,7 @@ const LoginPage = () => {
       console.log("token form login", accessToken)
 
       // Optionally, redirect the user after successful login
-      window.location.href = '/articles';  // Or use Next.js router to navigate
+      window.location.href = '/dashboard';  // Or use Next.js router to navigate
 
       setError('');
     } catch (error) {
