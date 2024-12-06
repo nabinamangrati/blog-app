@@ -32,7 +32,7 @@ import {
       // Step 3: Generate a JWT containing the user's ID and return it
       return {
         accessToken: this.jwtService.sign({ userId: user.id }),
-        refreshToken: this.jwtService.sign({ userId: user.id },{expiresIn: '7d'}),
+        refreshToken: this.jwtService.sign({ userId: user.id },{expiresIn: '2m'}),
       };
     }
 
@@ -48,10 +48,10 @@ import {
         }
   
         // Generate new access and refresh tokens
-        const newAccessToken = this.jwtService.sign({ userId: user.id }, { expiresIn: '5m' });
-        const newRefreshToken = this.jwtService.sign({ userId: user.id }, { expiresIn: '7d' });
+        const newAccessToken = this.jwtService.sign({ userId: user.id }, { expiresIn: '1m' });
+        // const newRefreshToken = this.jwtService.sign({ userId: user.id }, { expiresIn: '7d' });
   
-        return { accessToken: newAccessToken, refreshToken: newRefreshToken };
+        return { accessToken: newAccessToken};
       } catch (error) {
         throw new UnauthorizedException('Invalid refresh token');
       }

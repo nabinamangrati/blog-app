@@ -30,13 +30,28 @@ const Page=()=>{
       
       if (error.response && error.response.status === 401) {
         // Token expired, set error message
-        setError("Your session has expired. Please log in again.");
-      } else {
-        setError("Failed to fetch articles. Please try again later.");
+        localStorage.removeItem('authToken');
+        const refreshToken = localStorage.getItem('refreshToken');
+        if(!refreshToken){
+          setError("Your session has expired. Please log in again.");
+          return;
+        }
+        try {
+          const response = await axios.post('http://localhost:3000/auth/refresh-token', {
+            refreshToken,
+          });
+          // console.log("response",response.data);
+          localStorage.setItem('authToken', response.data.accessToken);
+          fetchArticles();
+        } catch (error) {
+          console.error(error); // Log errors for debugging
+          setError("Your session has expired. Please log in again.");
+  
       }
 
     }
-  };
+  }
+}
 
   useEffect(()=>{
    fetchArticles()
@@ -45,6 +60,8 @@ const Page=()=>{
   const handleLogout = () => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('refreshToken');
+    localStorage.removeItem('AuthToken');
+
     window.location.href = '/login';  // Redirect to login page
   }
 
