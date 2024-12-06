@@ -10,8 +10,8 @@ const Page=()=>{
   const fetchUsers = async () => {
     const token = localStorage.getItem('authToken');
     if (!token) {
-      setError("You need to log in to access the articles.");
-      console.log("You need to log in to access the articles.");
+      setError("You need to log in to access the users.");
+      console.log("You need to log in to access the users.");
       return;
     }
     
@@ -27,10 +27,26 @@ const Page=()=>{
       console.error(error); // Log errors for debugging
       if (error.response && error.response.status === 401) {
         // Token expired, set error message
-        setError("Your session has expired. Please log in again.");
-      } else {
-        setError("Failed to fetch articles. Please try again later.");
+        localStorage.removeItem('authToken');
+        const refreshToken = localStorage.getItem('refreshToken');
+        if(!refreshToken){
+          setError("Your session has expired. Please log in again.");
+          return;
+        }
+        try {
+          const response = await axios.post('http://localhost:3000/auth/refresh-token', {
+            refreshToken,
+          });
+          // console.log("response",response.data);
+          localStorage.setItem('authToken', response.data.accessToken);
+          fetchUsers();
+        } catch (error) {
+          console.error(error); // Log errors for debugging
+          setError("Your session has expired. Please log in again.");
+  
       }
+
+    }
 
     }
   };

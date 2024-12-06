@@ -1,5 +1,6 @@
 'use client'
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
 const UserDetail = ({ params }) => {
   const [user, setUser] = useState(null);
@@ -31,14 +32,24 @@ const UserDetail = ({ params }) => {
         });
 
         if (res.status === 401) {
-            // Token expired, set error message
-            setError("Your session has expired. Please log in again.");
-            return;
-          }
+          localStorage.removeItem('authToken');
+      const refreshToken = localStorage.getItem('refreshToken');
+      if(!refreshToken){
+        setError("Your session has expired. Please log in again.");
+        return;
+      }
+      try {
+        const response = await axios.post('http://localhost:3000/auth/refresh-token', {
+          refreshToken,
+        });
+        console.log("response",response.data);
+        localStorage.setItem('authToken', response.data.accessToken);
+        fetchData();
+      } catch (error) {
+        console.error(error); // Log errors for debugging
+        setError("Your session has expired. Please log in again.");
 
-        if (!res.ok) {
-          setError("Article not found");
-          return;
+    }
         }
 
         const data = await res.json();

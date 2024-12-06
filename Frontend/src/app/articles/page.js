@@ -60,7 +60,6 @@ const Page=()=>{
   const handleLogout = () => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('refreshToken');
-    localStorage.removeItem('AuthToken');
 
     window.location.href = '/login';  // Redirect to login page
   }
