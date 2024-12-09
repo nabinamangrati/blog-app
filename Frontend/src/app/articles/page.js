@@ -1,161 +1,128 @@
 'use client'
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import axiosInstance from "../../services/apiReq";
 
-const Page=()=>{
-  const [articles, setArticles]=useState([])
-  const [error, setError] = useState(""); 
-  const [newArticle,setNewArticle]=useState({title:'', description:'', body:''}) 
+const Page = () => {
+  const queryClient = useQueryClient();
 
+  // Fetch articles function
   const fetchArticles = async () => {
+    const response = await axiosInstance.get("/articles");
+    console.log(response.data, "response.data");
+    return response.data;
+  };
 
-    try {
-      const response = await axiosInstance.get("/articles");
-      setArticles(response.data);
-    } catch (error) {
-      setError(error.response?.data?.message || "An error occurred.");
-    }
-}
+  const [newArticle, setNewArticle] = useState({ title: '', description: '', body: '' });
 
-  useEffect(()=>{
-   fetchArticles()
-  },[])
+  // Mutation for adding a new article
+  const addArticle = async (newArticle) => {
+    const response = await axiosInstance.post("/articles", {
+      title: newArticle.title,
+      description: newArticle.description,
+      body: newArticle.body,
+    });
+    return response.data; // Return the added article data
+  };
 
+  // Using TanStack Query to fetch the articles
+  const { data: articles, error, isLoading, isError } = useQuery({
+    queryKey: ['articles'], // Unique key for the query
+    queryFn: fetchArticles, // The query function
+  });
+
+  // Mutation for adding a new article
+  const mutation = useMutation({
+    mutationFn: addArticle,
+    onSuccess: () => {
+      // Optionally, refetch the articles after a successful addition
+      queryClient.invalidateQueries(['articles']);
+    },
+    onError: (error) => {
+      console.error('Error adding article:', error);
+    },
+  });
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    mutation.mutate(newArticle); // Trigger the mutation to add the article
+    setNewArticle({ title: '', description: '', body: '' }); // Reset form
+  };
+
+  // Handle logout
   const handleLogout = () => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('refreshToken');
-
     window.location.href = '/login';  // Redirect to login page
+  };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
   }
 
-  const addArticle = async (event) => {
-    event.preventDefault(); // Prevent form submission from reloading the page
-  
-    try {
-      console.log("Starting axios POST request...");
-  
-      const response = await axiosInstance.post("/articles", {
-        title: newArticle.title,
-        description: newArticle.description,
-        body: newArticle.body,
-      });
-  
-      console.log("Response object:", response);
-  
-      if (response.status !== 201) { // Ensure that the article was created
-        setError("Failed to add article. Please try again.");
-        return;
-      }
-  
-      console.log("Parsed response data:", response.data);
-  
-      // Optionally, fetch or update the article list
-      fetchArticles();
-  
-      // Reset the input fields after successful submission
-      setNewArticle({ title: '', description: '', body: '' });
-    } catch (error) {
-      console.error("Error occurred:", error); // Log errors for debugging
-      setError("An error occurred. Please try again.");
-    }
-  };
-  
-  // const addArticle = async (event) => {
-  //   event.preventDefault(); // Prevent form submission from reloading the page
-  
-    // const token = localStorage.getItem('authToken');
-    // if (!token) {
-    //   setError("You need to log in to access the articles.");
-    //   console.log("You need to log in to access the articles.");
-    //   return;
-    // }
-  
-    // try {
-    //   console.log("Starting fetch request...");
-  
-    //   const response = await fetch('http://localhost:3000/articles', {
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //       Authorization: `Bearer ${token}`,
-    //     },
-    //     body: JSON.stringify({
-    //       title: newArticle.title,
-    //       description: newArticle.description,
-    //       body: newArticle.body,
-    //     }),
-    //   });
-  
-    //   console.log("Response object:", response);
-  
-    //   if (!response.ok) {
-    //     setError("Failed to add article. Please try again.");
-    //     return;
-    //   }
-  
-    //   const data = await response.json();
-    //   console.log("Parsed response data:", data);
-  
-    //   // Add the new article to the list
-    //   // setArticles((prevArticles) => {
-    //   //   console.log("Previous articles:", prevArticles);
-    //   //   console.log("New article:", data);
-    //   //   // Make sure the new article is correctly added
-    //   //   return [...prevArticles, data];
-    //   // });
-    //   fetchArticles();
-
-  
-    //   // Reset the input fields after successful submission
-    //   setNewArticle({ title: '', description: '', body: '' });
-    // } catch (error) {
-    //   console.error("Error occurred:", error); // Log errors for debugging
-    //   setError("An error occurred. Please try again.");
-    // }
-  // };
+  if (isError) {
+    return <div>Error: {error.message}</div>;
+  }
 
   return (
     <div>
       <h1>Articles</h1>
-<button onClick={handleLogout}>Logout</button>
-{error && <p style={{ color: 'red' }}>{error}</p>} {/* Display error message */}
-<h2>add articles</h2>
-<form onSubmit={addArticle}>
-Title:
-  <input 
-  type="text" 
-  value={newArticle.title}
-  onChange={(e)=>setNewArticle({...newArticle, title: e.target.value})}
-required
-  />
- <br></br>
+      <button onClick={handleLogout}>Logout</button>
 
-  Description:
-  <input 
-  type="text"
-  value={newArticle.description}
-  onChange={(e)=>setNewArticle({...newArticle, description: e.target.value})}/>
-<br></br>
-Body:
-<input type="text"
-value={newArticle.body}
-onChange={(e)=>setNewArticle({...newArticle, body:e.target.value})}/> <br></br>
-<button type="submit">add article</button>
-</form>
-        <ul>
-          {articles.map((article, index) => (
-            <li key={article.id}>
-             
+      {/* Display error message for adding article */}
+      {mutation.isError && <p style={{ color: 'red' }}>Error adding article: {mutation.error.message}</p>}
 
-              <p> {index + 1} Title: 
-  <Link href={`/articles/${article.id}`}>
-    {article.title}
-  </Link></p>
-            </li>
-          ))}
-        </ul>
+      <h2>Add Articles</h2>
+      <form onSubmit={handleSubmit}>
+        <label>
+          Title:
+          <input
+            type="text"
+            value={newArticle.title}
+            onChange={(e) => setNewArticle({ ...newArticle, title: e.target.value })}
+            required
+          />
+        </label>
+        <br />
+
+        <label>
+          Description:
+          <input
+            type="text"
+            value={newArticle.description}
+            onChange={(e) => setNewArticle({ ...newArticle, description: e.target.value })}
+          />
+        </label>
+        <br />
+
+        <label>
+          Body:
+          <input
+            type="text"
+            value={newArticle.body}
+            onChange={(e) => setNewArticle({ ...newArticle, body: e.target.value })}
+          />
+        </label>
+        <br />
+        <button type="submit">Add Article</button>
+      </form>
+
+      {/* List of articles */}
+      <ul>
+        {articles.map((article, index) => (
+          <li key={article.id}>
+            <p>
+              {index + 1}. Title: 
+              <Link href={`/articles/${article.id}`}>
+                {article.title}
+              </Link>
+            </p>
+          </li>
+        ))}
+      </ul>
     </div>
-  )
-}
-export default Page
+  );
+};
+
+export default Page;
