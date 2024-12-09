@@ -1,44 +1,56 @@
-// // authHelpers.js
-// import axios from 'axios';
+import axios from "axios";
 
-// export const apiRequest = async (url, setError, setArticles, fetchArticles) => {
-//   const token = localStorage.getItem('authToken');
-//   if (!token) {
-//     setError("You need to log in to access the articles.");
-//     console.log("You need to log in to access the articles.");
-//     return;
-//   }
+const axiosInstance = axios.create({
+  baseURL: "http://localhost:3000", // Set your base API URL here
+});
 
-//   try {
-//     const response = await axios.get(url, {
-//       headers: {
-//         Authorization: `Bearer ${token}`,
-//       },
-//     });
-//     console.log("data", response.data);
-//     setArticles(response.data);
-//   } catch (error) {
-//     console.error(error); // Log errors for debugging
 
-//     if (error.response && error.response.status === 401) {
-//       // Token expired, set error message
-//       localStorage.removeItem('authToken');
-//       const refreshToken = localStorage.getItem('refreshToken');
-//       if (!refreshToken) {
-//         setError("Your session has expired. Please log in again.");
-//         return;
-//       }
-//       try {
-//         const response = await axios.post('http://localhost:3000/auth/refresh-token', {
-//           refreshToken,
-//         });
-//         localStorage.setItem('authToken', response.data.accessToken);
-//         // Call fetchArticles again to fetch articles with the new access token
-//         fetchArticles();
-//       } catch (error) {
-//         console.error(error); // Log errors for debugging
-//         setError("Your session has expired. Please log in again.");
-//       }
-//     }
-//   }
-// };
+// Add request interceptor to attach tokens
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Add response interceptor for handling token refresh logic
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response && error.response.status === 401) {
+      const refreshToken = localStorage.getItem("refreshToken");
+      if (refreshToken) {
+        try {
+          const response = await axios.post(
+            "http://localhost:3000/auth/refresh-token",
+            { refreshToken }
+          );
+          const newToken = response.data.accessToken;
+          localStorage.setItem("authToken", newToken);
+
+          // Retry the original request with the new token
+          error.config.headers.Authorization = `Bearer ${newToken}`;
+          return axiosInstance(error.config);
+        } catch (refreshError) {
+          console.error("Failed to refresh token", refreshError);
+          localStorage.removeItem("authToken");
+          localStorage.removeItem("refreshToken");
+          window.location.href = "/login"; // Redirect to login
+          return Promise.reject(refreshError);
+        }
+      } else {
+        // No refresh token available, log out the user
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("refreshToken");
+        window.location.href = "/login";
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
+export default axiosInstance;

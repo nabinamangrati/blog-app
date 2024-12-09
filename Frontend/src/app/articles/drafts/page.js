@@ -1,56 +1,20 @@
 'use client'
 
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import Link from 'next/link';
+import axiosInstance from '../../../services/apiReq';
 
 const Drafts=()=>{
 
     const [articles, setArticles] = useState([]);
     const [error, setError] = useState("");
 const fetchDrafts=async()=>{
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      setError("You need to log in to access the articles.");
-      console.log("You need to log in to access the articles.");
-      return;
-    }
-    
-    try {
-      const response = await axios.get('http://localhost:3000/articles/drafts', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      console.log("data",response.data);
-      setArticles(response.data)
 
-      
-    } catch (error) {
-      console.error(error); // Log errors for debugging
-      
-      if (error.response && error.response.status === 401) {
-        // Token expired, set error message
-        localStorage.removeItem('authToken');
-        const refreshToken = localStorage.getItem('refreshToken');
-        if(!refreshToken){
-          setError("Your session has expired. Please log in again.");
-          return;
-        }
-        try {
-          const response = await axios.post('http://localhost:3000/auth/refresh-token', {
-            refreshToken,
-          });
-          // console.log("response",response.data);
-          localStorage.setItem('authToken', response.data.accessToken);
-          fetchDrafts();
-        } catch (error) {
-          console.error(error); // Log errors for debugging
-          setError("Your session has expired. Please log in again.");
-  
-      }
-
-    }
+  try {
+    const response = await axiosInstance.get("/articles/drafts");
+    setArticles(response.data);
+  } catch (error) {
+    setError(error.response?.data?.message || "An error occurred.");
   }
 }
 useEffect(() => {
