@@ -1,49 +1,55 @@
-'use client'
-import React, { useEffect, useState } from 'react';
-import axiosInstance from '../../../services/apiReq';
+"use client";
+import React, { use } from "react";
+import { useQuery } from "@tanstack/react-query";
+import axiosInstance from "../../../services/apiReq";
+
+const fetchUserDetails = async (id) => {
+  if (!id) {
+    throw new Error("No user ID provided");
+  }
+  const response = await axiosInstance.get(`/users/${id}`);
+  return response.data;
+};
 
 const UserDetail = ({ params }) => {
-  const [user, setUser] = useState(null);
-  const [error, setError] = useState(null);
-  const [id, setId] = useState(null);
+  const { id } = use(params); // Extract the user ID from params
 
-  useEffect(() => {
-    // Unwrapping the params and getting the id
-    const fetchData = async () => {
-      const { id: userId } = await params;  // Unwrap the params to get the id
-      setId(userId);
-      
-      if (!userId) {
-        setError("No article id provided");
-        return;
-      }
+  // Use the `useQuery` hook to fetch user details
+  const {
+    data: user,
+    error,  
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["user", id], // Unique key for caching based on the user ID
+    queryFn: () => fetchUserDetails(id), // Fetch function
+    enabled: !!id, // Ensure the query only runs if an ID is provided
+  });
 
-      try {
-        const response = await axiosInstance.get(`/users/${userId}`);
-        setUser(response.data);
-      } catch (error) {
-        setError(error.response?.data?.message || "An error occurred.");
-      }
-    };
-
-    fetchData();
-  }, [params]);
-
-  if (error) {
-    return <p>{error}</p>;
+  if (isLoading) {
+    return <p>Loading...</p>;
   }
 
-  if (!user) {
-    return <p>Loading...</p>;
+  if (isError) {
+    return <p>{error.message || "An error occurred."}</p>;
   }
 
   return (
     <div>
-      <h1><strong>Name:</strong> {user.name}</h1>
-      <p><strong>Email: </strong>{user.email}</p>
-      <p><strong>Created on:</strong> {new Date(user.createdAt).toLocaleString()}</p>
-      <p><strong>Last Updated:</strong> {new Date(user.updatedAt).toLocaleString()}</p>
-    
+      <h1>
+        <strong>Name:</strong> {user.name}
+      </h1>
+      <p>
+        <strong>Email: </strong>
+        {user.email}
+      </p>
+      <p>
+        <strong>Created on:</strong> {new Date(user.createdAt).toLocaleString()}
+      </p>
+      <p>
+        <strong>Last Updated:</strong>{" "}
+        {new Date(user.updatedAt).toLocaleString()}
+      </p>
     </div>
   );
 };

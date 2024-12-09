@@ -1,39 +1,40 @@
 'use client'
-import { useEffect, useState } from "react";
+import { useQuery } from '@tanstack/react-query';
+
 import Link from 'next/link';
 import axiosInstance from "../../services/apiReq";
 
 const Page=()=>{
-  const [users, setUsers]=useState([])
-  const [error, setError] = useState("");  
 
   const fetchUsers = async () => {
-
-    try {
-      const response = await axiosInstance.get("/users");
-      setUsers(response.data);
-    } catch (error) {
-      setError(error.response?.data?.message || "An error occurred.");
-    }
-  
+    const response = await axiosInstance.get("/users");
+    return  response.data
   };
 
-  useEffect(()=>{
-   fetchUsers()
-  },[])
+  const { data: users, error, isLoading, isError } = useQuery({
+    queryKey: ['users'], // Unique key for the query
+    queryFn: fetchUsers, // The query function
+  });
+
 
   const handleLogout = () => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('refreshToken');
     window.location.href = '/login';  // Redirect to login page
   }
+    
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (isError) {
+    return <div>Error: {error.message}</div>;
+  }
 
   return (
     <div>
       <h1>Users</h1>
 <button onClick={handleLogout}>Logout</button>
-  {error && <p style={{ color: 'red' }}>{error}</p>} {/* Display error message */}
-
         <ul>
           {users.map((user,index) => (
             <li key={user.id}>

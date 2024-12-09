@@ -1,45 +1,48 @@
-'use client'
+"use client";
+import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
+import axiosInstance from "../../../services/apiReq";
 
-import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
-import axiosInstance from '../../../services/apiReq';
-
-const Drafts=()=>{
-
-    const [articles, setArticles] = useState([]);
-    const [error, setError] = useState("");
-const fetchDrafts=async()=>{
-
-  try {
+const Drafts = () => {
+  const fetchDrafts = async () => {
     const response = await axiosInstance.get("/articles/drafts");
-    setArticles(response.data);
-  } catch (error) {
-    setError(error.response?.data?.message || "An error occurred.");
+    return response.data;
+  };
+
+  const {
+    data: articles,
+    error,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["articles"], // Unique key for the query
+    queryFn: fetchDrafts, // The query function
+  });
+
+  if (isLoading) {
+    return <div>Loading...</div>;
   }
-}
-useEffect(() => {
-    fetchDrafts();
-    }, []);
 
-    return (
-        <>
-       <h2>Drafts</h2>
-    {error && <p style={{ color: 'red' }}>{error}</p>} {/* Display error message */}
+  if (isError) {
+    return <div>Error: {error.message}</div>;
+  }
 
-    <ul>
-          {articles.map((article, index) => (
-            <li key={article.id}>
-             
+  return (
+    <>
+      <h2>Drafts</h2>
+      <ul>
+        {articles.map((article, index) => (
+          <li key={article.id}>
+            <p>
+              {" "}
+              {index + 1} Title:
+              <Link href={`/articles/${article.id}`}>{article.title}</Link>
+            </p>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+};
 
-              <p> {index + 1} Title: 
-  <Link href={`/articles/${article.id}`}>
-    {article.title}
-  </Link></p>
-            </li>
-          ))}
-        </ul>
-        </>
-    )
-}
-
-export default Drafts
+export default Drafts;

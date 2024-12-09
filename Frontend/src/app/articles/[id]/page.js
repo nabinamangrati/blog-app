@@ -1,51 +1,62 @@
-'use client'
-import React, { useEffect, useState } from 'react';
-import axiosInstance from '../../../services/apiReq';
+"use client";
+import React, { use } from "react";
+import { useQuery } from "@tanstack/react-query";
+import axiosInstance from "../../../services/apiReq";
+
+const fetchArticleDetails = async (id) => {
+  if (!id) {  
+    throw new Error("No article ID provided");
+  }
+  const response = await axiosInstance.get(`/articles/${id}`);
+  return response.data;
+};
 
 const ArticleDetail = ({ params }) => {
-  const [article, setArticle] = useState(null);
-  const [error, setError] = useState(null);
-  const [id, setId] = useState(null);
+  const { id } = use(params); // Extract the user ID from params
+  // Use the `useQuery` hook to fetch user details
+  const {
+    data: article,
+    error,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["article", id], // Unique key for caching based on the user ID
+    queryFn: () => fetchArticleDetails(id), // Fetch function
+    enabled: !!id, // Ensure the query only runs if an ID is provided
+  });
 
-  useEffect(() => {
-    // Unwrapping the params and getting the id
-    const fetchData = async () => {
-      const { id: articleId } = await params;  // Unwrap the params to get the id
-      setId(articleId);
-      
-      if (!articleId) {
-        setError("No article id provided");
-        return;
-      }
-
-      try {
-        const response = await axiosInstance.get(`/articles/${articleId}`);
-        setArticle(response.data);
-      } catch (error) {
-        setError(error.response?.data?.message || "An error occurred.");
-      }
-    };
-
-    fetchData();
-  }, [params]);
-
-  if (error) {
-    return <p>{error}</p>;
+  if (isLoading) {
+    return <p>Loading...</p>;
   }
 
-  if (!article) {
-    return <p>Loading...</p>;
+  if (isError) {
+    return <p>{error.message || "An error occurred."}</p>;
   }
 
   return (
     <div>
-      <h1><strong>Title:</strong> {article.title}</h1>
-      <p><strong>Description: </strong>{article.description}</p>
-      <p><strong>Body:</strong> {article.body}</p>
-      <p><strong>Author:</strong>{article.author?.name}</p>
-      <p><strong>Published on:</strong> {new Date(article.createdAt).toLocaleString()}</p>
-      <p><strong>Last Updated:</strong> {new Date(article.updatedAt).toLocaleString()}</p>
-    
+      <h1>
+        <strong>Title:</strong> {article.title}
+      </h1>
+      <p>
+        <strong>Description: </strong>
+        {article.description}
+      </p>
+      <p>
+        <strong>Body:</strong> {article.body}
+      </p>
+      <p>
+        <strong>Author:</strong>
+        {article.author?.name}
+      </p>
+      <p>
+        <strong>Published on:</strong>{" "}
+        {new Date(article.createdAt).toLocaleString()}
+      </p>
+      <p>
+        <strong>Last Updated:</strong>{" "}
+        {new Date(article.updatedAt).toLocaleString()}
+      </p>
     </div>
   );
 };

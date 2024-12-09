@@ -1,14 +1,12 @@
-'use client'
-import React, { useEffect } from 'react';
-import Link from 'next/link';
+"use client";
+import React, { useEffect } from "react";
+import Link from "next/link";
 
 const Dashboard = () => {
-
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem("authToken");
     if (!token) {
-    window.location.href = '/login';  // Redirect to login page
-
+      window.location.href = "/login"; // Redirect to login page
     }
   }, []);
 
