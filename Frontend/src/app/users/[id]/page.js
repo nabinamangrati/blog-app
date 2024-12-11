@@ -2,6 +2,7 @@
 import React, { use } from "react";
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../../../services/apiReq";
+import useUserStore from "../../../store/userStore";
 
 const fetchUserDetails = async (id) => {
   if (!id) {
@@ -12,6 +13,7 @@ const fetchUserDetails = async (id) => {
 };
 
 const UserDetail = ({ params }) => {
+  const {setUser} = useUserStore();
   const { id } = use(params); // Extract the user ID from params
 
   // Use the `useQuery` hook to fetch user details
@@ -24,6 +26,9 @@ const UserDetail = ({ params }) => {
     queryKey: ["user", id], // Unique key for caching based on the user ID
     queryFn: () => fetchUserDetails(id), // Fetch function
     enabled: !!id, // Ensure the query only runs if an ID is provided
+    onSuccess: (data) => {
+      setUser(data); // Set the user data in the store
+    },
   });
 
   if (isLoading) {

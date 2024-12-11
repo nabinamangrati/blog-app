@@ -1,10 +1,18 @@
-// src/store/articleStore.js
 import {create} from 'zustand';
 
 const useArticleStore = create((set) => ({
-  article: null, // Initially no user data
-  setArticle: (articleData) => set({ article: articleData }), // Set user data
-//   clearArticle: () => set({ article: null }), // Clear article data (e.g., on logout)
+  articles: [], // Store the list of articles
+  setArticles: (articles) => set({ articles }), // Set the list of articles
+
+   // Add a new article
+   addArticle: (newArticle) => set((state) => ({
+    articles: [...state.articles, newArticle],
+    
+  })),
+
+  article: null, // Single article (if needed for details)
+  setArticle: (articleData) => set({ article: articleData }), // Set a single article
 }));
 
 export default useArticleStore;
+

@@ -8,7 +8,7 @@ import useArticleStore from "../../store/articleStore";
 
 const Page = () => {
   const { clearAuth } = useAuthStore();
-  const { setArticle, article } = useArticleStore();
+  const { setArticles } = useArticleStore();
   const queryClient = useQueryClient();
 
   // Fetch articles function
@@ -37,7 +37,9 @@ const Page = () => {
     onSuccess: (data) => {
       console.log(data, "data");
       if (data && data.length > 0) {
-        setArticle(data[0]);
+        console.log("Fetched Data:", data); // Log the response data
+
+        setArticles(data);
       }
     },
   });

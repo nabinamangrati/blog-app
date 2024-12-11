@@ -7,8 +7,7 @@ import useUserStore from '../../store/userStore';
 
 const Page=()=>{
   const { clearAuth } = useAuthStore();
-  const { setUser,user } = useUserStore();
-  console.log(user,'user') //gives null
+  const { setUsers } = useUserStore();
 
   const fetchUsers = async () => {
     const response = await axiosInstance.get("/users");
@@ -20,7 +19,7 @@ const Page=()=>{
     queryFn: fetchUsers, // The query function
     onSuccess: (data) => {
       if (data && data.length > 0) {
-        setUser(data[0]);
+        setUsers(data);
       }
     },
   });
