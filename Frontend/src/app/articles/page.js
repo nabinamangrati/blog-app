@@ -3,8 +3,12 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import axiosInstance from "../../services/apiReq";
+import useAuthStore from "../../store/authStore";
+import useArticleStore from "../../store/articleStore";
 
 const Page = () => {
+  const { clearAuth } = useAuthStore();
+  const { setArticle, article } = useArticleStore();
   const queryClient = useQueryClient();
 
   // Fetch articles function
@@ -30,6 +34,12 @@ const Page = () => {
   const { data: articles, error, isLoading, isError } = useQuery({
     queryKey: ['articles'], // Unique key for the query
     queryFn: fetchArticles, // The query function
+    onSuccess: (data) => {
+      console.log(data, "data");
+      if (data && data.length > 0) {
+        setArticle(data[0]);
+      }
+    },
   });
 
   // Mutation for adding a new article
@@ -52,8 +62,7 @@ const Page = () => {
 
   // Handle logout
   const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('refreshToken');
+    clearAuth(); // Clear the authentication state from Zustand store
     window.location.href = '/login';  // Redirect to login page
   };
 
