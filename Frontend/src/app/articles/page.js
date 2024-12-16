@@ -8,14 +8,14 @@ import useArticleStore from "../../store/articleStore";
 
 const Page = () => {
   const { clearAuth } = useAuthStore();
-  const { setArticles } = useArticleStore();
+  const { articles,setArticles } = useArticleStore();
   const queryClient = useQueryClient();
 
   // Fetch articles function
   const fetchArticles = async () => {
     const response = await axiosInstance.get("/articles");
-    console.log(response.data, "response.data");
-    return response.data;
+    setArticles(response.data);
+    return response.data
   };
 
   const [newArticle, setNewArticle] = useState({ title: '', description: '', body: '' });
@@ -31,17 +31,11 @@ const Page = () => {
   };
 
   // Using TanStack Query to fetch the articles
-  const { data: articles, error, isLoading, isError } = useQuery({
+  const {error, isLoading, isError } = useQuery({
+    
     queryKey: ['articles'], // Unique key for the query
     queryFn: fetchArticles, // The query function
-    onSuccess: (data) => {
-      console.log(data, "data");
-      if (data && data.length > 0) {
-        console.log("Fetched Data:", data); // Log the response data
-
-        setArticles(data);
-      }
-    },
+   //onSuccess cant be used in tanstack version 5 so it is removed
   });
 
   // Mutation for adding a new article
