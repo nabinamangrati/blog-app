@@ -7,21 +7,17 @@ import useUserStore from '../../store/userStore';
 
 const Page=()=>{
   const { clearAuth } = useAuthStore();
-  const { setUsers } = useUserStore();
+  const { users, setUsers } = useUserStore();
 
   const fetchUsers = async () => {
     const response = await axiosInstance.get("/users");
+    setUsers(response.data);
     return  response.data
   };
 
-  const { data: users, error, isLoading, isError } = useQuery({
+  const {error, isLoading, isError } = useQuery({
     queryKey: ['users'], // Unique key for the query
     queryFn: fetchUsers, // The query function
-    onSuccess: (data) => {
-      if (data && data.length > 0) {
-        setUsers(data);
-      }
-    },
   });
   console.log(users,'users')//gives the users data
 

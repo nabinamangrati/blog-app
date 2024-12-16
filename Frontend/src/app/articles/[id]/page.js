@@ -4,20 +4,23 @@ import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../../../services/apiReq";
 import useArticleStore from "../../../store/articleStore";
 
-const fetchArticleDetails = async (id) => {
-  if (!id) {  
-    throw new Error("No article ID provided");
-  }
-  const response = await axiosInstance.get(`/articles/${id}`);
-  return response.data;
-};
+
 
 const ArticleDetail = ({ params }) => {
-const {setArticle} = useArticleStore();
+  const {article, setArticle} = useArticleStore();
+
   const { id } = use(params); // Extract the user ID from params
+
+  const fetchArticleDetails = async (id) => {
+    if (!id) {  
+      throw new Error("No article ID provided");
+    }
+    const response = await axiosInstance.get(`/articles/${id}`);
+    setArticle(response.data)
+    return response.data;
+  };
   // Use the `useQuery` hook to fetch user details
   const {
-    data: article,
     error,
     isLoading,
     isError,
@@ -25,9 +28,7 @@ const {setArticle} = useArticleStore();
     queryKey: ["article", id], // Unique key for caching based on the user ID
     queryFn: () => fetchArticleDetails(id), // Fetch function
     enabled: !!id, // Ensure the query only runs if an ID is provided
-    onSuccess: (data) => {
-      setArticle(data); // Set the user data in the store
-    }
+   
   });
 
   if (isLoading) {
