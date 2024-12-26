@@ -6,13 +6,19 @@ import axiosInstance from "../../../services/apiReq";
 import useArticleStore from "../../../store/articleStore";
 import jwt from 'jsonwebtoken';
 
-
-const ArticleDetail = ({ params }) => {
+const ArticleDetail = ({params}) => {
   const {article, setArticle} = useArticleStore();
 
   const { id } = use(params); // Extract the user ID from params
+  // console.log("id",id)
 
   const [loggedInUser, setLoggedInUser] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [updatedArticle, setUpdatedArticle] = useState({
+    title: "",
+    description: "",
+    body: "",
+  });
 
   useEffect(() => {
     const token = localStorage.getItem("authToken");
@@ -20,7 +26,7 @@ const ArticleDetail = ({ params }) => {
     if (token) {
       try {
         const decodedToken = jwt.decode(token); // Decode the token
-        console.log("Decoded token", decodedToken.userId);
+        // console.log("Decoded token", decodedToken.userId);
         setLoggedInUser(decodedToken); // Store the decoded user info
       } catch (error) {
         console.error("Invalid token", error);
@@ -34,6 +40,11 @@ const ArticleDetail = ({ params }) => {
     }
     const response = await axiosInstance.get(`/articles/${id}`);
     setArticle(response.data);
+    setUpdatedArticle({
+      title: response.data.title,
+      description: response.data.description,
+      body: response.data.body,
+    });
     return response.data;
   };
   // Use the `useQuery` hook to fetch user details
@@ -55,7 +66,7 @@ const ArticleDetail = ({ params }) => {
     await axiosInstance.delete(`/articles/${id}`);
   };
 
-  const mutation = useMutation({
+  const mutationDelete = useMutation({
     mutationFn: deleteArticle,
     // onSuccess: () => {
     //   alert("Article deleted successfully");
@@ -67,15 +78,51 @@ const ArticleDetail = ({ params }) => {
   });
 
   const handleDelete=async()=>{
-      console.log("article user",article.author.id)
+      // console.log("article user",article.author.id)
 
     if (window.confirm("Are you sure you want to delete this article?")) {
-      mutation.mutate(id); // Trigger the mutation
+      mutationDelete.mutate(id); // Trigger the mutation
       if(window.confirm("You have successfully deleted the article. Get back to the articles page?")){
         window.location.href = '/articles';
       }
     }
  }
+
+ const updateArticle = async ({id,updatedArticle}) => {
+  // console.log("id from update",typeof(id), id)
+  // console.log("updatedArticle",updatedArticle)
+  if (!id) {
+    throw new Error("No article ID provided for deletion");
+  }
+  await axiosInstance.patch(`/articles/${id}`,updatedArticle);
+
+};
+
+const mutationUpdate = useMutation({
+  mutationFn: updateArticle,
+  // onSuccess: () => {
+  //   alert("Article deleted successfully");
+  //   // router.replace("/articles"); // Redirect to articles list
+  // },
+  onError: (err) => {
+    alert(err.response?.data?.message || "Failed to update the article");
+  },
+});
+ const handleEdit=()=>{
+  setIsEditing(true);
+  }
+
+  const handleSave = async (e) => {
+    e.preventDefault()
+    // console.log("handlesave called")
+    // console.log("id from save",typeof(id))
+    if (window.confirm("Are you sure you want to update this article?")) {
+       mutationUpdate.mutate({id, updatedArticle}); // Trigger update
+      if(window.confirm("You have successfully updated the article. Get back to the articleDetail page?")){
+        window.location.href = `/articles/${id}`;
+      }
+    }
+  };
 
   if (isLoading) {
     return <p>Loading...</p>;
@@ -84,42 +131,86 @@ const ArticleDetail = ({ params }) => {
   if (isError) {
     return <p>{error.message || "An error occurred."}</p>;
   }
-  // console.log("loggedInUser",loggedInUser?.userId)
-  // console.log("article author",article?.authorId)
 
   const isOwner = loggedInUser?.userId === article?.authorId;
   
   return (
     <div>
-      <h1>
-        <strong>Title:</strong> {article.title}
-      </h1>
-      <p>
-        <strong>Description: </strong>
-        {article.description}
-      </p>
-      <p>
-        <strong>Body:</strong> {article.body}
-      </p>
-      <p>
-        <strong>Author:</strong>
-        {article.author?.name}
-      </p>
-      <p>
-        <strong>Published on:</strong>
-        {new Date(article.createdAt).toLocaleString()}
-      </p>
-      <p>
-        <strong>Last Updated:</strong>
-        {new Date(article.updatedAt).toLocaleString()}
-      </p>
-      {isOwner && (
-      <button onClick={handleDelete} disabled={mutation.isLoading}>
-        {mutation.isLoading ? "Deleting..." : "Delete"}
-      </button>
+      {isEditing ? (
+        <div>
+          <h1>Edit Article</h1>
+          <form onSubmit={(e) => {
+            e.preventDefault(); // Prevent form submission
+           handleSave(e);
+          }}>
+            <div>
+              <label>Title: </label>
+              <input
+                type="text"
+                value={updatedArticle.title}
+                onChange={(e) =>
+                  setUpdatedArticle({ ...updatedArticle, title: e.target.value })
+                }
+              />
+            </div>
+            <div>
+              <label>Description: </label>
+              <input
+                value={updatedArticle.description}
+                onChange={(e) =>
+                  setUpdatedArticle({ ...updatedArticle, description: e.target.value })
+                }
+              />
+            </div>
+            <div>
+              <label>Body: </label>
+              <input
+                value={updatedArticle.body}
+                onChange={(e) =>
+                  setUpdatedArticle({ ...updatedArticle, body: e.target.value })
+                }
+              />
+            </div>
+            <button type="submit" disabled={mutationUpdate.isLoading}>
+            {mutationUpdate.isLoading ? "Updating..." : "Save"}
+          </button>
+            <button type="button" onClick={() => setIsEditing(false)}>Cancel</button>
+          </form>
+        </div>
+      ) : (
+        <div>
+          <h1>
+            <strong>Title:</strong> {article.title}
+          </h1>
+          <p>
+            <strong>Description: </strong>
+            {article.description}
+          </p>
+          <p>
+            <strong>Body:</strong> {article.body}
+          </p>
+          <p>
+            <strong>Author:</strong> {article.author?.name}
+          </p>
+          <p>
+            <strong>Published on:</strong>
+            {new Date(article.createdAt).toLocaleString()}
+          </p>
+          <p>
+            <strong>Last Updated:</strong>
+            {new Date(article.updatedAt).toLocaleString()}
+          </p>
+          {isOwner && (
+            <div>
+              <button onClick={handleDelete} disabled={mutationDelete.isLoading}>
+                {mutationDelete.isLoading ? "Deleting..." : "Delete"}
+              </button>
+              <button onClick={handleEdit}>Edit</button>
+            </div>
           )}
-       </div>
+        </div>
+      )}
+    </div>
   );
-};
-
+}  
 export default ArticleDetail;
