@@ -33,6 +33,8 @@ const Drafts = () => {
   return (
     <>
       <h2>Drafts</h2>
+      <Link href="/add-article">Create new article</Link>
+
       <ul>
         {articles.map((article, index) => (
           <li key={article.id}>

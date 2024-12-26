@@ -1,5 +1,5 @@
 'use client'
-import {useQuery, useQueryClient } from '@tanstack/react-query';
+import {useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import axiosInstance from "../../services/apiReq";
 import useAuthStore from "../../store/authStore";
@@ -41,7 +41,9 @@ const Page = () => {
   return (
     <div>
       <h1>Articles</h1>
-      <button onClick={handleLogout}>Logout</button>
+      <button onClick={handleLogout}>Logout</button> <br/>
+      <Link href="/add-article">Create new article</Link>
+
 
       {/* List of articles */}
       <ul>
