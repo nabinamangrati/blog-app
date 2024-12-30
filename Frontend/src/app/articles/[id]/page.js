@@ -5,6 +5,9 @@ import { useQuery,useMutation } from "@tanstack/react-query";
 import axiosInstance from "../../../services/apiReq";
 import useArticleStore from "../../../store/articleStore";
 import jwt from 'jsonwebtoken';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
 
 const ArticleDetail = ({params}) => {
   const {article, setArticle} = useArticleStore();
@@ -59,7 +62,7 @@ const ArticleDetail = ({params}) => {
    
   });
 
-  const deleteArticle = async (id) => {
+  const deleteArticle = async ({id}) => {
     if (!id) {
       throw new Error("No article ID provided for deletion");
     }
@@ -81,7 +84,7 @@ const ArticleDetail = ({params}) => {
       // console.log("article user",article.author.id)
 
     if (window.confirm("Are you sure you want to delete this article?")) {
-      mutationDelete.mutate(id); // Trigger the mutation
+      mutationDelete.mutate({id}); // Trigger the mutation
       if(window.confirm("You have successfully deleted the article. Get back to the articles page?")){
         window.location.href = '/articles';
       }
@@ -137,7 +140,7 @@ const mutationUpdate = useMutation({
   return (
     <div>
       {isEditing ? (
-        <div>
+        <div className="flex gap-4">
           <h1>Edit Article</h1>
           <form onSubmit={(e) => {
             e.preventDefault(); // Prevent form submission
@@ -145,7 +148,7 @@ const mutationUpdate = useMutation({
           }}>
             <div>
               <label>Title: </label>
-              <input
+              <Input
                 type="text"
                 value={updatedArticle.title}
                 onChange={(e) =>
@@ -155,7 +158,7 @@ const mutationUpdate = useMutation({
             </div>
             <div>
               <label>Description: </label>
-              <input
+              <Input
                 value={updatedArticle.description}
                 onChange={(e) =>
                   setUpdatedArticle({ ...updatedArticle, description: e.target.value })
@@ -164,17 +167,19 @@ const mutationUpdate = useMutation({
             </div>
             <div>
               <label>Body: </label>
-              <input
+              <Input
                 value={updatedArticle.body}
                 onChange={(e) =>
                   setUpdatedArticle({ ...updatedArticle, body: e.target.value })
                 }
               />
             </div>
-            <button type="submit" disabled={mutationUpdate.isLoading}>
+            <div className="flex gap-4 w-full">
+            <Button type="submit" disabled={mutationUpdate.isLoading}>
             {mutationUpdate.isLoading ? "Updating..." : "Save"}
-          </button>
-            <button type="button" onClick={() => setIsEditing(false)}>Cancel</button>
+          </Button>
+            <Button type="button" onClick={() => setIsEditing(false)}>Cancel</Button>
+            </div>
           </form>
         </div>
       ) : (
@@ -202,10 +207,10 @@ const mutationUpdate = useMutation({
           </p>
           {isOwner && (
             <div>
-              <button onClick={handleDelete} disabled={mutationDelete.isLoading}>
+              <Button onClick={handleDelete} disabled={mutationDelete.isLoading}>
                 {mutationDelete.isLoading ? "Deleting..." : "Delete"}
-              </button>
-              <button onClick={handleEdit}>Edit</button>
+              </Button>
+              <Button onClick={handleEdit}>Edit</Button>
             </div>
           )}
         </div>

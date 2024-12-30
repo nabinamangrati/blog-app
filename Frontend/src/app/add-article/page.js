@@ -3,13 +3,15 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axiosInstance from "../../services/apiReq";
 import useArticleStore from "../../store/articleStore";
+import { Input } from "@/components/ui/input";
+import {  Button } from "@/components/ui/button";
+
 
 const Page = () => {
   // const queryClient = useQueryClient();
   const [newArticle, setNewArticle] = useState({ title: '', description: '', body: '' });
 
   const addArticleToStore = useArticleStore(state => state.addArticle);  // Access `addArticle` from the store
-
 
   // Mutation for adding a new article
   const addArticle = async (newArticle) => {
@@ -24,10 +26,8 @@ const Page = () => {
   // Mutation for adding a new article
   const mutation = useMutation({
     mutationFn: addArticle,
-    onMutate: async (newArticle) => {
-      addArticleToStore(newArticle);  // Optimistically update Zustand state with the new article
-    },
-    onSuccess: () => {
+    onSuccess: (newArticle) => {
+      addArticleToStore(newArticle);  // Update Zustand state with the new article
       // Optionally, refetch the articles after a successful addition
       // queryClient.invalidateQueries(['articles']);
       console.log('Article added successfully');
@@ -44,7 +44,7 @@ const Page = () => {
   };
 
   return (
-    <div>
+    <div  className="grid w-full max-w-sm items-center gap-1.5">
       {/* Display error message for adding article */}
       {mutation.isError && <p style={{ color: 'red' }}>Error adding article: {mutation.error.message}</p>}
 
@@ -52,7 +52,7 @@ const Page = () => {
       <form onSubmit={handleSubmit}>
         <label>
           Title:
-          <input
+          <Input
             type="text"
             value={newArticle.title}
             onChange={(e) => setNewArticle({ ...newArticle, title: e.target.value })}
@@ -63,7 +63,7 @@ const Page = () => {
 
         <label>
           Description:
-          <input
+          <Input
             type="text"
             value={newArticle.description}
             onChange={(e) => setNewArticle({ ...newArticle, description: e.target.value })}
@@ -73,14 +73,14 @@ const Page = () => {
 
         <label>
           Body:
-          <input
+          <Input
             type="text"
             value={newArticle.body}
             onChange={(e) => setNewArticle({ ...newArticle, body: e.target.value })}
           />
         </label>
         <br />
-        <button type="submit">Add Article</button>
+        <Button type="submit">Add Article</Button>
       </form>
     </div>
   );
