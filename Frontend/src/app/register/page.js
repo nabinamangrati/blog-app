@@ -1,5 +1,16 @@
 'use client'
 import { useState } from 'react';
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  CardDescription
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
@@ -48,6 +59,7 @@ const RegisterPage = () => {
 
       const data = await response.json();
       setSuccessMessage('Registration successful! Please log in.');
+      window.location.href = '/login';  
       setError('');
     } catch (error) {
       console.error(error);
@@ -58,61 +70,92 @@ const RegisterPage = () => {
   };
 
   return (
-    <div>
-      <h2>Register</h2>
-
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
+    <div className="flex justify-center items-center min-h-screen">
+     <Card className="w-[350px]">
+        <CardHeader>
+          <CardTitle>Register</CardTitle>
+          <CardDescription>Create a new account by entering your details below.</CardDescription>
+        </CardHeader>
+        <CardContent>
+      {error &&           
+      <p className="text-red-500 bg-red-100 p-3 rounded-md text-sm">
+        {error}
+      </p>}
+      {successMessage && 
+      <p className="text-green-500 bg-green-100 p-3 rounded-md text-sm">
+        {successMessage}
+        </p>}
 
       <form onSubmit={handleSubmit}>
-        <label>
+      <div className="grid w-full items-center gap-4">
+      <div className="flex flex-col space-y-1.5">
+        <Label>
           Name:
-          <input
+          <Input
             type="text"
             name="name"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required
           />
-        </label>
-        <br />
-        <label>
+        </Label>
+        </div>
+        <div className="flex flex-col space-y-1.5">
+        <Label>
           Email:
-          <input
+          <Input
             type="email"
             name="email"
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             required
           />
-        </label>
-        <br />
-        <label>
+        </Label>
+        </div>
+        <div className="flex flex-col space-y-1.5">
+        <Label>
           Password:
-          <input
+          <Input
             type="password"
             name="password"
             value={formData.password}
             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
             required
           />
-        </label>
-        <br />
-        <label>
+        </Label>
+      
+        </div>
+        <div className="flex flex-col space-y-1.5">
+        <Label>
           Confirm Password:
-          <input
+          <Input
             type="password"
             name="confirmPassword"
             value={formData.confirmPassword}
             onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
             required
           />
-        </label>
-        <br />
-        <button type="submit">Register</button>
+        </Label>
+        </div>
+        </div>
+        <div className="mt-4">
+        <CardFooter className="flex justify-between">
+          <Button variant="outline" type="button" onClick={() =>  setFormData({
+          name: '',
+          email: '',
+          password: '',
+          confirmPassword: ''
+        })}>Cancel</Button>
+          <Button type="submit">Register</Button>
+        </CardFooter>
+        </div>
       </form>
+      </CardContent>
+      </Card>
     </div>
+    
   );
+
 };
 
 export default RegisterPage;

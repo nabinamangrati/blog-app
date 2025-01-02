@@ -1,5 +1,16 @@
 'use client'
 import { useState } from 'react';
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  CardDescription
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
@@ -43,7 +54,7 @@ const LoginPage = () => {
       console.log("token form login", accessToken)
 
       // Optionally, redirect the user after successful login
-      window.location.href = '/dashboard';  // Or use Next.js router to navigate
+      window.location.href = '/dashboard';  
 
       setError('');
     } catch (error) {
@@ -58,38 +69,57 @@ const LoginPage = () => {
   };
 
   return (
-    <div>
-      <h2>Login</h2>
+    <div className="flex justify-center items-center min-h-screen">
+      <Card className="w-[350px]">
+        <CardHeader>
+          <CardTitle>Login</CardTitle>
+          <CardDescription>Please enter your credentials to log in.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {error &&   
+          <p className="text-red-500 bg-red-100 p-3 rounded-md text-sm">
+            {error}
+          </p>}
+          {successMessage && 
+           <p className="text-green-500 bg-green-100 p-3 rounded-md text-sm">
+            {successMessage}
+            </p>}
+          <form onSubmit={handleSubmit}>
+            <div className="grid w-full items-center gap-4">
+              <div className="flex flex-col space-y-1.5">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  required
+                />
+              </div>
 
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
-
-      <form onSubmit={handleSubmit}>
-        <label>
-          Email:
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            required
-          />
-        </label>
-        <br />
-        <label>
-          Password:
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-            required
-          />
-        </label>
-        <br />
-
-        <button type="submit">Login</button>
-      </form>
+              <div className="flex flex-col space-y-1.5">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Enter your password"
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  required
+                />
+              </div>
+            </div>
+            
+       <div className="mt-4">
+        <CardFooter className="flex justify-between">
+          <Button variant="outline" type="button" onClick={() => setFormData({ email: '', password: '' })}>Cancel</Button>
+          <Button type="submit">Login</Button>
+        </CardFooter>
+        </div>
+        </form>
+        </CardContent>
+      </Card>
     </div>
   );
 };
