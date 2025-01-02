@@ -7,13 +7,26 @@ import useArticleStore from "../../../store/articleStore";
 import jwt from 'jsonwebtoken';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"; 
 
 
 const ArticleDetail = ({params}) => {
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
+
   const {article, setArticle} = useArticleStore();
 
   const { id } = use(params); // Extract the user ID from params
-  // console.log("id",id)
 
   const [loggedInUser, setLoggedInUser] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -29,7 +42,6 @@ const ArticleDetail = ({params}) => {
     if (token) {
       try {
         const decodedToken = jwt.decode(token); // Decode the token
-        // console.log("Decoded token", decodedToken.userId);
         setLoggedInUser(decodedToken); // Store the decoded user info
       } catch (error) {
         console.error("Invalid token", error);
@@ -71,29 +83,19 @@ const ArticleDetail = ({params}) => {
 
   const mutationDelete = useMutation({
     mutationFn: deleteArticle,
-    // onSuccess: () => {
-    //   alert("Article deleted successfully");
-    //   // router.replace("/articles"); // Redirect to articles list
-    // },
+    onSuccess: () => {
+      window.location.href = '/articles';
+    },
     onError: (err) => {
       alert(err.response?.data?.message || "Failed to delete the article");
     },
   });
 
   const handleDelete=async()=>{
-      // console.log("article user",article.author.id)
-
-    if (window.confirm("Are you sure you want to delete this article?")) {
-      mutationDelete.mutate({id}); // Trigger the mutation
-      if(window.confirm("You have successfully deleted the article. Get back to the articles page?")){
-        window.location.href = '/articles';
-      }
-    }
+    setIsDeleteDialogOpen(true);
  }
 
  const updateArticle = async ({id,updatedArticle}) => {
-  // console.log("id from update",typeof(id), id)
-  // console.log("updatedArticle",updatedArticle)
   if (!id) {
     throw new Error("No article ID provided for deletion");
   }
@@ -103,10 +105,9 @@ const ArticleDetail = ({params}) => {
 
 const mutationUpdate = useMutation({
   mutationFn: updateArticle,
-  // onSuccess: () => {
-  //   alert("Article deleted successfully");
-  //   // router.replace("/articles"); // Redirect to articles list
-  // },
+  onSuccess: () => {
+    window.location.href = `/articles/${id}`;
+  },
   onError: (err) => {
     alert(err.response?.data?.message || "Failed to update the article");
   },
@@ -116,15 +117,8 @@ const mutationUpdate = useMutation({
   }
 
   const handleSave = async (e) => {
-    e.preventDefault()
-    // console.log("handlesave called")
-    // console.log("id from save",typeof(id))
-    if (window.confirm("Are you sure you want to update this article?")) {
-       mutationUpdate.mutate({id, updatedArticle}); // Trigger update
-      if(window.confirm("You have successfully updated the article. Get back to the articleDetail page?")){
-        window.location.href = `/articles/${id}`;
-      }
-    }
+    e.preventDefault();
+    setIsSaveDialogOpen(true);
   };
 
   if (isLoading) {
@@ -215,6 +209,49 @@ const mutationUpdate = useMutation({
           )}
         </div>
       )}
+       {/* Save Confirmation Dialog (Alert Dialog for Save) */}
+       <AlertDialog open={isSaveDialogOpen} onOpenChange={setIsSaveDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure you want to save changes?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Please confirm that you want to save the changes to this article.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setIsSaveDialogOpen(false)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+        onClick={(e) => {
+          handleSave(e); // Trigger the save action
+          mutationUpdate.mutate({id, updatedArticle}); // Trigger update
+          setIsSaveDialogOpen(false); // Close the dialog
+        }}
+      >
+        {mutationUpdate.isLoading ? "Saving..." : "Confirm"}
+      </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+       {/* Delete Confirmation Dialog (Alert Dialog for Delete) */}
+       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure you want to delete this article?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action is irreversible. Are you sure you want to delete this article?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setIsDeleteDialogOpen(false)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={()=>{handleDelete()
+              mutationDelete.mutate({id});
+             } }>
+              {mutationDelete.isLoading ? "Deleting..." : "Confirm"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }  
